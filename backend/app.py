@@ -1,8 +1,11 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routes import resume
+print("resume loaded")
 from routes import job
+print("job loaded")
 from routes import apply
+print("apply loaded")
 import uvicorn
 import os
 
