@@ -1,24 +1,25 @@
 fastapi
-uvicorn
+uvicorn[standard]
 python-dotenv
 python-multipart
 
-# AI / LLM
+# LangChain core
 langchain
 langchain-community
 langchain-core
 langchain-text-splitters
-langchain-huggingface
+
+# LLM APIs
 langchain-groq
-
-# Embeddings / ML
-sentence-transformers
-faiss-cpu
-
-# API / HTTP
-requests
-httpx
-
-# Optional (if using Groq / OpenAI)
 groq
 openai
+
+# Embeddings (lighter setup)
+sentence-transformers
+
+# Vector DB
+faiss-cpu
+
+# HTTP
+requests
+httpx
