@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File
-from backend.services.resume_service import process_resume
+from services.resume_service import process_resume
 
 router = APIRouter(prefix="/resume")
 

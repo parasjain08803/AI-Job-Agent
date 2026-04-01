@@ -1,4 +1,4 @@
-from backend.chains.application_chain import application_chain
+from chains.application_chain import application_chain
 import json
 
 def generate_application(resume_data, job):

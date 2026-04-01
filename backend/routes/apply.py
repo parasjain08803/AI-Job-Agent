@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.services.application_agent import generate_application
+from services.application_agent import generate_application
 
 router = APIRouter(prefix="/apply")
 

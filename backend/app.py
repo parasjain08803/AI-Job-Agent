@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routes import resume
-from backend.routes import job
-from backend.routes import apply
+from routes import resume
+from routes import job
+from routes import apply
 
 app=FastAPI()
 app.add_middleware(

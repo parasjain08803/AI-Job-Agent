@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from backend.services.match_service import get_matching_jobs
+from services.match_service import get_matching_jobs
 
 router = APIRouter(prefix="/jobs")
 

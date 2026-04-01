@@ -3,7 +3,7 @@ from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
 from langchain_groq import ChatGroq
-from backend.services.job_service import fetch_jobs
+from services.job_service import fetch_jobs
 from dotenv import load_dotenv
 
 load_dotenv()
