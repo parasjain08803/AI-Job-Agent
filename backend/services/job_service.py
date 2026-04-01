@@ -7,7 +7,7 @@ load_dotenv()
 APP_ID = os.getenv("ADZUNA_APP_ID")
 APP_KEY = os.getenv("ADZUNA_APP_KEY")
 
-def fetch_jobs(query="AI Engineer", location="India"):
+def fetch_jobs(query, location="India"):
     url = f"https://api.adzuna.com/v1/api/jobs/in/search/1"
 
     params = {

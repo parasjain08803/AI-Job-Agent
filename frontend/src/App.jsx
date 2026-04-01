@@ -14,6 +14,7 @@ export default function App() {
   const [jobs, setJobs] = useState([]);
   const [application, setApplication] = useState(null);
   const [activeJob, setActiveJob] = useState(null);
+  const [jobQuery, setJobQuery] = useState("");
 
   const [uploadStatus, setUploadStatus] = useState("");
   const [matchStatus, setMatchStatus] = useState("");
@@ -76,7 +77,10 @@ export default function App() {
       const response = await fetch(`${API_BASE}/jobs/match`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(resumeData),
+        body: JSON.stringify({
+          ...resumeData,
+          query: jobQuery?.trim() || undefined,
+        }),
       });
       if (!response.ok) throw new Error(`Job matching failed (${response.status})`);
 
@@ -161,6 +165,14 @@ export default function App() {
           </Card>
 
           <Card title="2) Match Jobs">
+            <div className="flex flex-wrap items-center gap-3">
+              <input
+                value={jobQuery}
+                onChange={(e) => setJobQuery(e.target.value)}
+                placeholder="Job title / keyword (optional). Leave blank to auto-detect from resume."
+                className="min-w-[260px] flex-1 rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
+              />
+            </div>
             <ActionButton onClick={handleMatch} disabled={!canMatch}>
               {matching ? "Finding..." : "Find Top Matches"}
             </ActionButton>

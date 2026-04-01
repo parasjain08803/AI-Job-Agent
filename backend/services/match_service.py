@@ -54,6 +54,41 @@ def prepare_resume_text(data):
     return skill_text + " " + project_text
 
 
+query_parser = JsonOutputParser()
+query_prompt = ChatPromptTemplate.from_template("""
+You are an expert career coach and job search assistant.
+
+Given this resume data (already parsed to JSON), propose the best job search query to use in a job API.
+
+Rules:
+- Output MUST be valid JSON only.
+- Keep "query" short (2-6 words), like a real job-search keyword.
+- Prefer a role title over listing many skills.
+
+Resume JSON:
+{resume_json}
+
+Return JSON:
+{{
+  "query": "string"
+}}
+""")
+
+query_chain = query_prompt | llm | query_parser
+
+
+def _derive_query_from_resume_llm(resume_structured: dict) -> str:
+    result = query_chain.invoke({"resume_json": resume_structured})
+    if not isinstance(result, dict):
+        raise ValueError("LLM did not return a JSON object")
+
+    query = result.get("query")
+    if not isinstance(query, str) or not query.strip():
+        raise ValueError("Missing/invalid query from LLM")
+
+    return query.strip()
+
+
 def create_job_vectorstore(jobs):
     texts = [job["description"] for job in jobs]
     metadatas = jobs
@@ -98,9 +133,18 @@ def match_jobs(resume_text, vectorstore):
 
 def get_matching_jobs(resume_data):
 
-    resume_text = prepare_resume_text(resume_data.get("data", {}))
+    resume_structured = resume_data.get("data", {}) if isinstance(resume_data, dict) else {}
+    resume_text = prepare_resume_text(resume_structured)
 
-    jobs = fetch_jobs(query="AI Engineer")
+    query = None
+    if isinstance(resume_data, dict):
+        query = resume_data.get("query") or resume_data.get("job_query")
+
+    query = query.strip() if isinstance(query, str) else ""
+    if not query:
+        query = _derive_query_from_resume_llm(resume_structured)
+
+    jobs = fetch_jobs(query=query,location="India")
 
     vectorstore = create_job_vectorstore(jobs)
 
