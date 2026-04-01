@@ -3,6 +3,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from routes import resume
 from routes import job
 from routes import apply
+import uvicorn
+import os
 
 app=FastAPI()
 app.add_middleware(
@@ -20,5 +22,9 @@ app.include_router(apply.router)
 def home():
     return {"message":"AI job agent is running"}
 
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 10000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
 
 
