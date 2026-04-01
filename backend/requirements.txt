@@ -2,7 +2,6 @@ fastapi
 uvicorn
 python-dotenv
 python-multipart
-python==3.11.9
 
 # AI / LLM
 langchain
