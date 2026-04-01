@@ -8,3 +8,5 @@ async def upload_resume(file: UploadFile = File(...)):
     content = await file.read()
     result = process_resume(content)
     return {"data": result}
+
+

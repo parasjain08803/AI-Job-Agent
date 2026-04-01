@@ -8,17 +8,15 @@ langchain
 langchain-community
 langchain-core
 langchain-text-splitters
+langchain-huggingface
 
 # LLM APIs
 langchain-groq
 groq
-openai
 
 # Embeddings (lighter setup)
 sentence-transformers
 
-# Vector DB
-faiss-cpu
 
 # HTTP
 requests

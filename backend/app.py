@@ -19,3 +19,6 @@ app.include_router(apply.router)
 @app.get("/")
 def home():
     return {"message":"AI job agent is running"}
+
+
+

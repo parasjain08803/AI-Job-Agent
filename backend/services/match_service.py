@@ -1,10 +1,10 @@
-from langchain_community.vectorstores import FAISS
-from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.output_parsers import JsonOutputParser
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from services.job_service import fetch_jobs
 from dotenv import load_dotenv
+import numpy as np
 
 load_dotenv()
 
@@ -89,24 +89,28 @@ def _derive_query_from_resume_llm(resume_structured: dict) -> str:
     return query.strip()
 
 
-def create_job_vectorstore(jobs):
-    texts = [job["description"] for job in jobs]
-    metadatas = jobs
 
-    return FAISS.from_texts(texts, embeddings, metadatas=metadatas)
+def cosine_similarity(a, b):
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
 
-def match_jobs(resume_text, vectorstore):
 
-    # Step 1: FAISS shortlist
-    docs = vectorstore.similarity_search(resume_text, k=10)
+def match_jobs(resume_text, jobs):
+
+    resume_vec = embeddings.embed_query(resume_text)
+
+    scored_jobs = []
+
+    for job in jobs:
+        job_vec = embeddings.embed_query(job["description"])
+        score = cosine_similarity(resume_vec, job_vec)
+        scored_jobs.append((job, score))
+
+    top_jobs = sorted(scored_jobs, key=lambda x: x[1], reverse=True)[:10]
 
     results = []
 
-    # Step 2: LLM via LCEL
-    for doc in docs:
-        job = doc.metadata
-
+    for job, _ in top_jobs:
         response = chain.invoke({
             "resume": resume_text,
             "title": job["title"],
@@ -115,16 +119,15 @@ def match_jobs(resume_text, vectorstore):
 
         results.append({
             "title": job["title"],
-            "company":job["company"],
-            "location":job["location"],
+            "company": job["company"],
+            "location": job["location"],
             "description": job["description"],
-            "url":job["url"],
+            "url": job["url"],
             "score": response.get("score", 0),
             "reason": response.get("reason", ""),
-            "missing_skills":response.get("missing_skills",[]),
-            "suggestion":response.get("suggestion","")
+            "missing_skills": response.get("missing_skills", []),
+            "suggestion": response.get("suggestion", "")
         })
-
 
     results = sorted(results, key=lambda x: x["score"], reverse=True)
 
@@ -144,10 +147,8 @@ def get_matching_jobs(resume_data):
     if not query:
         query = _derive_query_from_resume_llm(resume_structured)
 
-    jobs = fetch_jobs(query=query,location="India")
+    jobs = fetch_jobs(query=query, location="India")
 
-    vectorstore = create_job_vectorstore(jobs)
-
-    matches = match_jobs(resume_text, vectorstore)
+    matches = match_jobs(resume_text, jobs)
 
     return matches
