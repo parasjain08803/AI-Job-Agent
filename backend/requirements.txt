@@ -3,21 +3,17 @@ uvicorn[standard]
 python-dotenv
 python-multipart
 
-# LangChain core
 langchain
 langchain-community
 langchain-core
 langchain-text-splitters
 langchain-huggingface
 
-# LLM APIs
 langchain-groq
 groq
 
-# Embeddings (lighter setup)
 sentence-transformers
+torch --index-url https://download.pytorch.org/whl/cpu
 
-
-# HTTP
 requests
 httpx
