@@ -3,7 +3,7 @@ name = "ai-job-application"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
-requires-python = ">=3.14"
+requires-python = ">=3.11.9"
 dependencies = [
     "astrapy>=2.2.1",
     "cassio",
