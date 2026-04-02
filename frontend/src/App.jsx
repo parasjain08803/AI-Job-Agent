@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
-const API_BASE = "https://aijobagent.duckdns.org/";
+const API_BASE = "https://aijobagent.duckdns.org";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
