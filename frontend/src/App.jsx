@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = "http://3.111.57.60";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
