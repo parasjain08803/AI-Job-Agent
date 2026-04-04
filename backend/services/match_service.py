@@ -47,11 +47,20 @@ def prepare_resume_text(data):
 
     skill_text = " ".join(skills)
 
-    project_text = " ".join(
-        [p.get("description", "") for p in projects]
-    )
+    project_text_list = []
+    for p in projects:
+        desc = p.get("description", "")
 
-    return skill_text + " " + project_text
+        if isinstance(desc, list):
+            desc = " ".join(desc)   
+        elif not isinstance(desc, str):
+            desc = ""
+
+        project_text_list.append(desc)
+
+    project_text = " ".join(project_text_list)
+
+    return f"Skills: {skill_text}\nProjects: {project_text}"
 
 
 query_parser = JsonOutputParser()
