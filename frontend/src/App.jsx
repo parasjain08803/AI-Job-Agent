@@ -78,8 +78,8 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          ...resumeData,
-          query: jobQuery?.trim() || undefined,
+          resume: resumeData?.data ?? {},
+          query: jobQuery?.trim() ?? "",
         }),
       });
       if (!response.ok) throw new Error(`Job matching failed (${response.status})`);
