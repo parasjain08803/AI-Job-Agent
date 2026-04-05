@@ -21,49 +21,23 @@ Text:
 """)
 
 parser_prompt = ChatPromptTemplate.from_template("""
-You are a strict resume parser.
+Extract the following from the resume:
 
-Extract structured information from the resume text.
+- skills (list)
+- experience (list)
+- projects (list)
+- education (list)
 
-Return ONLY valid JSON in the exact format below:
+Return ONLY valid JSON in this format:
 
-{
-  "skills": [string],
-  "experience": [
-    {
-      "role": string,
-      "company": string,
-      "description": string
-    }
-  ],
-  "projects": [
-    {
-      "name": string,
-      "description": string,
-      "technologies": [string]
-    }
-  ],
-  "education": [
-    {
-      "degree": string,
-      "institution": string
-    }
-  ]
-}
+{{
+  "skills": [],
+  "experience": [],
+  "projects": [],
+  "education": []
+}}
 
-STRICT RULES:
-- Skills = technologies, tools, programming languages
-- Experience = jobs, internships, work roles (NOT projects)
-- Projects = personal/academic projects (NOT jobs)
-- Education = degrees, college, school
-
-- NEVER mix projects into experience
-- NEVER put project inside experience
-- If a section is missing, return []
-- Do NOT add extra keys
-- Do NOT return text, ONLY JSON
-
-Resume:
+Text:
 {text}
 """)
 
