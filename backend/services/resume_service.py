@@ -14,26 +14,40 @@ def process_resume(documents):
     for chunk in chunks:
         try:
             res = parser_chain.invoke({"text": chunk.page_content})
-            extracted_data.append(res)
-        except:
+
+            if isinstance(res, dict):
+                extracted_data.append(res)
+
+        except Exception:
             continue
 
     final_output = {
-        "skills": set(),
-        "experience": set(),
-        "projects": set(),
-        "education": set()
+        "skills": [],
+        "experience": [],
+        "projects": [],
+        "education": []
     }
 
     for item in extracted_data:
         for key in final_output:
-            if key in item:
-                for val in item[key]:
-                    if isinstance(val, dict):
-                        final_output[key].add(str(val))
-                    else:
-                        final_output[key].add(val)
 
-    final_output = {k: list(v) for k, v in final_output.items()}
+            if key not in item:
+                continue
+
+            value = item[key]
+
+            if isinstance(value, list):
+                for v in value:
+
+                    if key in ["projects", "experience"]:
+                        if isinstance(v, dict):
+                            final_output[key].append(v)
+
+                    else:
+                        if isinstance(v, (str, int, float)):
+                            final_output[key].append(str(v))
+
+    final_output["skills"] = list(set(final_output["skills"]))
+    final_output["education"] = list(set(final_output["education"]))
 
     return final_output
