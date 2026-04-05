@@ -92,7 +92,7 @@ export default function App() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        resume: resumeData?.data ?? {},
+        data: resumeData?.data ?? {},
         query: jobQuery?.trim() ?? "",
       }),
     });
