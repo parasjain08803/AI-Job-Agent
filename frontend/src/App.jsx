@@ -32,38 +32,48 @@ export default function App() {
   );
 
   async function handleUpload() {
-    if (!resumeFile) {
-      setUploadStatus("Please select a resume PDF first.");
+  if (!resumeFile) {
+    setUploadStatus("Please select a resume PDF first.");
+    return;
+  }
+
+  setUploading(true);
+  setUploadStatus("Analyzing your resume...");
+  setJobs([]);
+  setApplication(null);
+  setApplyStatus("");
+  setMatchStatus("");
+  setResumeData(null);
+
+  try {
+    const formData = new FormData();
+    formData.append("file", resumeFile);
+
+    const response = await fetch(`${API_BASE}/resume/upload`, {
+      method: "POST",
+      body: formData,
+    });
+
+    if (!response.ok) throw new Error(`Resume upload failed (${response.status})`);
+
+    const data = await response.json();
+
+    if (!data.is_resume) {
+      setUploadStatus(data.message || "Uploaded file is not a valid resume.");
+      setResumeData(null);
       return;
     }
 
-    setUploading(true);
-    setUploadStatus("Analyzing your resume...");
-    setJobs([]);
-    setApplication(null);
-    setApplyStatus("");
-    setMatchStatus("");
+    setResumeData(data);
+    setUploadStatus("Resume parsed successfully.");
 
-    try {
-      const formData = new FormData();
-      formData.append("file", resumeFile);
-
-      const response = await fetch(`${API_BASE}/resume/upload`, {
-        method: "POST",
-        body: formData,
-      });
-      if (!response.ok) throw new Error(`Resume upload failed (${response.status})`);
-
-      const data = await response.json();
-      setResumeData(data);
-      setUploadStatus("Resume parsed successfully.");
-    } catch (error) {
-      setUploadStatus(error.message || "Could not parse resume.");
-      setResumeData(null);
-    } finally {
-      setUploading(false);
-    }
+  } catch (error) {
+    setUploadStatus(error.message || "Could not parse resume.");
+    setResumeData(null);
+  } finally {
+    setUploading(false);
   }
+}
 
   async function handleMatch() {
     if (!resumeData) return;
