@@ -3,6 +3,8 @@ from chains.parser_chain import parser_chain
 
 def process_resume(documents):
 
-    final_output=parser_chain.invoke({"text":documents.page_content})
+    full_text = "\n".join([doc.page_content for doc in documents])
+
+    final_output = parser_chain.invoke({"text": full_text})
 
     return final_output
