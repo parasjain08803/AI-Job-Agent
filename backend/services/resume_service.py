@@ -4,8 +4,8 @@ from chains.parser_chain import parser_chain
 def process_resume(documents):
 
     splitter = RecursiveCharacterTextSplitter(
-    chunk_size=1000,
-    chunk_overlap=200
+        chunk_size=1000,
+        chunk_overlap=200
     )
     chunks = splitter.split_documents(documents)
 
@@ -28,7 +28,11 @@ def process_resume(documents):
     for item in extracted_data:
         for key in final_output:
             if key in item:
-                final_output[key].update(item[key])
+                for val in item[key]:
+                    if isinstance(val, dict):
+                        final_output[key].add(str(val))
+                    else:
+                        final_output[key].add(val)
 
     final_output = {k: list(v) for k, v in final_output.items()}
 
