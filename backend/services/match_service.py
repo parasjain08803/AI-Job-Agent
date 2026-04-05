@@ -1,45 +1,15 @@
-from langchain_core.prompts import ChatPromptTemplate
-from langchain_core.output_parsers import JsonOutputParser
-from langchain_huggingface import HuggingFaceEmbeddings
-from langchain_groq import ChatGroq
+from chains.match_chain import match_chain
+from chains.query_chain import query_chain
+from llms.prompts import match_prompt,query_prompt
+from llms.llm import llm1,llm2
 from services.job_service import fetch_jobs
+from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 import numpy as np
 
 load_dotenv()
 
 embeddings = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-
-llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    temperature=0
-)
-
-parser = JsonOutputParser()
-
-prompt = ChatPromptTemplate.from_template("""
-You are an expert AI recruiter.
-
-Evaluate how well this resume matches the job.
-
-Resume:
-{resume}
-
-Job Title: {title}
-Job Description: {description}
-
-Return JSON:
-{{
-  "score": number (0-100),
-  "reason": "short explanation",
-  "missing_skills": ["list of important missing skills"],
-  "suggestion": "how candidate can improve for this role"                                        
-                                          
-}}
-""")
-
-chain = prompt | llm | parser
-
 
 def prepare_resume_text(data):
     skills = data.get("skills", [])
@@ -63,29 +33,6 @@ def prepare_resume_text(data):
     return f"Skills: {skill_text}\nProjects: {project_text}"
 
 
-query_parser = JsonOutputParser()
-query_prompt = ChatPromptTemplate.from_template("""
-You are an expert career coach and job search assistant.
-
-Given this resume data (already parsed to JSON), propose the best job search query to use in a job API.
-
-Rules:
-- Output MUST be valid JSON only.
-- Keep "query" short (2-6 words), like a real job-search keyword.
-- Prefer a role title over listing many skills.
-
-Resume JSON:
-{resume_json}
-
-Return JSON:
-{{
-  "query": "string"
-}}
-""")
-
-query_chain = query_prompt | llm | query_parser
-
-
 def _derive_query_from_resume_llm(resume_structured: dict) -> str:
     result = query_chain.invoke({"resume_json": resume_structured})
     if not isinstance(result, dict):
@@ -101,7 +48,6 @@ def _derive_query_from_resume_llm(resume_structured: dict) -> str:
 
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
-
 
 
 def match_jobs(resume_text, jobs):
@@ -120,7 +66,7 @@ def match_jobs(resume_text, jobs):
     results = []
 
     for job, _ in top_jobs:
-        response = chain.invoke({
+        response = match_chain.invoke({
             "resume": resume_text,
             "title": job["title"],
             "description": job["description"]
