@@ -27,9 +27,14 @@ export default function App() {
   const canMatch = Boolean(resumeData) && !matching;
 
   const sortedJobs = useMemo(
-    () => [...jobs].sort((a, b) => Number(b.score || 0) - Number(a.score || 0)),
-    [jobs]
-  );
+  () =>
+    [...jobs].sort(
+      (a, b) =>
+        (parseInt(String(b.score).trim()) || 0) -
+        (parseInt(String(a.score).trim()) || 0)
+    ),
+  [jobs]
+);
 
   async function handleUpload() {
   if (!resumeFile) {
@@ -79,6 +84,7 @@ export default function App() {
     if (!resumeData) return;
 
     setMatching(true);
+    setJobs([]);
     setMatchStatus("Finding top matching roles...");
     setApplication(null);
     setApplyStatus("");
@@ -199,7 +205,7 @@ export default function App() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-lg font-semibold">{job.title || "Untitled Role"}</h3>
                     <span className="rounded-full border border-emerald-400/35 bg-emerald-500/10 px-2 py-1 text-xs font-bold text-emerald-300">
-                      {Number(job.score || 0)}% Match
+                      {parseInt(String(job.score).trim()) || 0}% Match
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-slate-300">
