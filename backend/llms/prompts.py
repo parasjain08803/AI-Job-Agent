@@ -30,26 +30,26 @@ Return ONLY valid JSON in the exact format below:
 {{
   "skills": [string],
   "experience": [
-    {{
+    {
       "role": string,
       "company": string,
       "description": string
-    }}
+    }
   ],
   "projects": [
-    {{
+    {
       "name": string,
       "description": string,
       "technologies": [string]
-    }}
+    }
   ],
   "education": [
-    {{
+    {
       "degree": string,
       "institution": string
-    }}
+    }
   ]
-}
+}}
 
 STRICT RULES:
 - Skills = technologies, tools, programming languages
