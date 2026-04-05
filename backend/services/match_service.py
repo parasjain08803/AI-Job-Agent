@@ -145,7 +145,10 @@ def match_jobs(resume_text, jobs):
 
 def get_matching_jobs(resume_data):
 
-    resume_structured = resume_data.get("data", {}) if isinstance(resume_data, dict) else {}
+    if "data" in resume_data:
+        resume_structured = resume_data.get("data",{})
+    else:
+        resume_structured = resume_data
     resume_text = prepare_resume_text(resume_structured)
 
     query = None
