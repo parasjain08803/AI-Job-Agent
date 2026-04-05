@@ -1,7 +1,6 @@
 from chains.match_chain import match_chain
 from chains.query_chain import query_chain
 from llms.prompts import match_prompt,query_prompt
-from llms.llm import llm1,llm2
 from services.job_service import fetch_jobs
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
