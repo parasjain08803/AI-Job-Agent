@@ -81,36 +81,37 @@ export default function App() {
 }
 
   async function handleMatch() {
-    if (!resumeData) return;
+  if (!resumeData) return;
 
-    setMatching(true);
-    setJobs([]);
-    setMatchStatus("Finding top matching roles...");
-    setApplication(null);
-    setApplyStatus("");
+  setMatching(true);
+  setJobs([]); // Clear existing list
+  setMatchStatus("Finding top matching roles...");
 
-    try {
-      const response = await fetch(`${API_BASE}/jobs/match`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          resume: resumeData?.data ?? {},
-          query: jobQuery?.trim() ?? "",
-        }),
-      });
-      if (!response.ok) throw new Error(`Job matching failed (${response.status})`);
+  try {
+    const response = await fetch(`${API_BASE}/jobs/match`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        resume: resumeData?.data ?? {},
+        query: jobQuery?.trim() ?? "",
+      }),
+    });
+    
+    const data = await response.json();
+    
+    // IMPORTANT: Log this to your browser console (F12) 
+    // to see exactly what the frontend is receiving.
+    console.log("Raw Matches from Backend:", data.matches);
 
-      const data = await response.json();
-      const matches = data.matches || [];
-      setJobs(matches);
-      setMatchStatus(matches.length ? "Top matches are ready." : "No matches returned.");
-    } catch (error) {
-      setMatchStatus(error.message || "Could not fetch job matches.");
-      setJobs([]);
-    } finally {
-      setMatching(false);
-    }
+    const matches = data.matches || [];
+    setJobs([...matches]); // Use spread to ensure a new reference
+    setMatchStatus(matches.length ? "Matches updated." : "No matches found.");
+  } catch (error) {
+    setMatchStatus("Error: " + error.message);
+  } finally {
+    setMatching(false);
   }
+}
 
   async function handleApply(job) {
     if (!resumeData) return;
