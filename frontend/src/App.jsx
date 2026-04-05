@@ -28,11 +28,11 @@ export default function App() {
 
   const sortedJobs = useMemo(
   () =>
-    [...jobs].sort(
-      (a, b) =>
-        (parseInt(String(b.score).trim()) || 0) -
-        (parseInt(String(a.score).trim()) || 0)
-    ),
+    [...jobs].sort((a, b) => {
+      const scoreA = Number(a.score) || 0;
+      const scoreB = Number(b.score) || 0;
+      return scoreB - scoreA; // Descending order (highest first)
+    }),
   [jobs]
 );
 
@@ -69,7 +69,7 @@ export default function App() {
       return;
     }
 
-    setResumeData(data.data);
+    setResumeData(data);
     setUploadStatus("Resume parsed successfully.");
 
   } catch (error) {
@@ -94,7 +94,7 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resume: resumeData ?? {},
+          resume: resumeData?.data ?? {},
           query: jobQuery?.trim() ?? "",
         }),
       });
@@ -205,7 +205,7 @@ export default function App() {
                   <div className="flex flex-wrap items-center justify-between gap-2">
                     <h3 className="text-lg font-semibold">{job.title || "Untitled Role"}</h3>
                     <span className="rounded-full border border-emerald-400/35 bg-emerald-500/10 px-2 py-1 text-xs font-bold text-emerald-300">
-                      {parseInt(String(job.score).trim()) || 0}% Match
+                      {Number(job.score) || 0}% Match
                     </span>
                   </div>
                   <p className="mt-1 text-sm text-slate-300">
