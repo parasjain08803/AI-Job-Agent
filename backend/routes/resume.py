@@ -24,7 +24,7 @@ async def upload_resume(file: UploadFile = File(...)):
     classification_chain = classifier_prompt | classifier_llm | classification_parser
     classification = classification_chain.invoke({"text": first_page_text})
 
-    result = classification.content.strip().lower()
+    result = classification.strip().lower()
 
     if result == "not_resume":
         return {
