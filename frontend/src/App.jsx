@@ -69,7 +69,7 @@ export default function App() {
       return;
     }
 
-    setResumeData(data);
+    setResumeData(data.data);
     setUploadStatus("Resume parsed successfully.");
 
   } catch (error) {
@@ -94,7 +94,7 @@ export default function App() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          resume: resumeData?.data ?? {},
+          resume: resumeData ?? {},
           query: jobQuery?.trim() ?? "",
         }),
       });
