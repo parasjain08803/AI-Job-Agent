@@ -21,13 +21,13 @@ Text:
 """)
 
 parser_prompt = ChatPromptTemplate.from_template("""
-You are a strict resume parser.
+You are an intelligent resume parser.
 
 Extract structured information from the resume text.
 
-Return ONLY valid JSON in the exact format below:
+Return JSON in the following format:
 
-{{
+{
   "skills": [string],
   "experience": [
     {
@@ -49,19 +49,20 @@ Return ONLY valid JSON in the exact format below:
       "institution": string
     }
   ]
-}}
+}
 
-STRICT RULES:
-- Skills = technologies, tools, programming languages
-- Experience = jobs, internships, work roles (NOT projects)
-- Projects = personal/academic projects (NOT jobs)
-- Education = degrees, college, school
+GUIDELINES:
+- Extract as much relevant information as possible
+- Skills = tools, technologies, programming languages
+- Experience = jobs, internships, positions
+- Projects = personal or academic work
+- Education = degrees, colleges, schools
 
-- NEVER mix projects into experience
-- NEVER put project inside experience
-- If a section is missing, return []
-- Do NOT add extra keys
-- Do NOT return text, ONLY JSON
+IMPORTANT:
+- If unsure, make a reasonable guess instead of returning empty
+- Do NOT mix projects into experience
+- Return empty list [] only if absolutely nothing is found
+- Return ONLY valid JSON
 
 Resume:
 {text}
