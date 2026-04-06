@@ -184,7 +184,7 @@ export default function App() {
             </div>
             <Status>{uploadStatus}</Status>
           </Card>
-          
+
           {ats && (
             <Card title="1.1) ATS Analysis">
               <div className="flex flex-col items-center mb-6">
@@ -326,6 +326,39 @@ function Card({ title, children }) {
       <h2 className="mb-3 text-lg font-semibold">{title}</h2>
       {children}
     </motion.section>
+  );
+}
+
+function ATSList({ title, items, color }) {
+  if (!items?.length) return null;
+  return (
+    <div>
+      <h3 className={`${color} font-semibold mb-2`}>{title}</h3>
+      <ul className="text-sm text-slate-300 space-y-1">
+        {items.map((item, i) => <li key={i}>• {item}</li>)}
+      </ul>
+    </div>
+  );
+}
+
+function JobCard({ job, idx, onApply, applying, activeJob }) {
+  return (
+    <motion.article initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.05 }} className="rounded-xl border border-white/10 bg-slate-950/40 p-4">
+      <div className="flex justify-between items-start">
+        <div>
+          <h3 className="font-bold text-lg">{job.title}</h3>
+          <p className="text-sm text-slate-400">{job.company} • {job.location}</p>
+        </div>
+        <span className="bg-emerald-500/20 text-emerald-400 px-2 py-1 rounded text-xs font-bold">{job.score}% Match</span>
+      </div>
+      <p className="mt-3 text-sm text-slate-300">{job.reason}</p>
+      <div className="mt-4 flex gap-3">
+        <ActionButton onClick={() => onApply(job)} disabled={applying}>
+          {applying && activeJob?.title === job.title ? "Generating..." : "Apply with AI"}
+        </ActionButton>
+        {job.url && <a href={job.url} target="_blank" rel="noreferrer" className="px-4 py-2 text-sm border border-white/20 rounded-xl hover:bg-white/5">View Posting</a>}
+      </div>
+    </motion.article>
   );
 }
 
