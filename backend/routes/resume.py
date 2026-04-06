@@ -1,9 +1,9 @@
 from fastapi import APIRouter, UploadFile, File
-from backend.loaders.resume_loader import load_resume
-from backend.llms.prompts import classifier_prompt,parser_prompt
-from backend.llms.llm import classifier_llm,parser_llm
-from backend.services.resume_service import process_resume
-from backend.chains.ats_chain import ats_chain
+from loaders.resume_loader import load_resume
+from llms.prompts import classifier_prompt,parser_prompt
+from llms.llm import classifier_llm,parser_llm
+from services.resume_service import process_resume
+from chains.ats_chain import ats_chain
 from langchain_core.output_parsers import StrOutputParser
 
 router = APIRouter(prefix="/resume")
