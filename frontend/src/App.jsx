@@ -12,6 +12,7 @@ export default function App() {
   const [resumeFile, setResumeFile] = useState(null);
   const [resumeData, setResumeData] = useState(null);
   const [jobs, setJobs] = useState([]);
+  const [ats, setATS] = useState(null);
   const [application, setApplication] = useState(null);
   const [activeJob, setActiveJob] = useState(null);
   const [jobQuery, setJobQuery] = useState("");
@@ -49,6 +50,7 @@ export default function App() {
   setApplyStatus("");
   setMatchStatus("");
   setResumeData(null);
+  setATS(null);
 
   try {
     const formData = new FormData();
@@ -69,7 +71,8 @@ export default function App() {
       setResumeData(null);
       return;
     }
-
+    
+    setATS(data.ats);
     setResumeData(data);
     setUploadStatus("Resume parsed successfully.");
 
@@ -181,6 +184,41 @@ export default function App() {
             </div>
             <Status>{uploadStatus}</Status>
           </Card>
+          
+          {ats && (
+            <Card title="1.1) ATS Analysis">
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative w-32 h-32">
+                  <svg className="w-full h-full rotate-[-90deg]">
+                    <circle cx="64" cy="64" r="56" stroke="#1e293b" strokeWidth="10" fill="none" />
+                    <circle
+                      cx="64" cy="64" r="56" stroke="url(#gradient)" strokeWidth="10" fill="none"
+                      strokeDasharray={2 * Math.PI * 56}
+                      strokeDashoffset={2 * Math.PI * 56 * (1 - ats.ats_score / 100)}
+                      strokeLinecap="round"
+                      style={{ transition: "stroke-dashoffset 1s ease-in-out" }}
+                    />
+                    <defs>
+                      <linearGradient id="gradient">
+                        <stop offset="0%" stopColor="#8b5cf6" /><stop offset="100%" stopColor="#06b6d4" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center text-2xl font-bold">
+                    {ats.ats_score}%
+                  </div>
+                </div>
+                <p className="text-sm text-slate-400 text-center mt-4 max-w-md">{ats.summary}</p>
+              </div>
+
+              <div className="grid md:grid-cols-2 gap-6">
+                <ATSList title="Strengths" items={ats.strengths} color="text-green-400" />
+                <ATSList title="Weaknesses" items={ats.weaknesses} color="text-red-400" />
+                <ATSList title="Suggestions" items={ats.improvement_suggestions} color="text-yellow-400" />
+                <ATSList title="Missing Keywords" items={ats.keywords_missing} color="text-blue-400" />
+              </div>
+            </Card>
+          )}
 
           <Card title="2) Match Jobs">
             <div className="flex flex-wrap items-center gap-3">

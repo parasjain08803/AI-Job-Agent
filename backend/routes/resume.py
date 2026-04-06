@@ -1,8 +1,9 @@
 from fastapi import APIRouter, UploadFile, File
-from loaders.resume_loader import load_resume
-from llms.prompts import classifier_prompt,parser_prompt
-from llms.llm import classifier_llm,parser_llm
-from services.resume_service import process_resume
+from backend.loaders.resume_loader import load_resume
+from backend.llms.prompts import classifier_prompt,parser_prompt
+from backend.llms.llm import classifier_llm,parser_llm
+from backend.services.resume_service import process_resume
+from backend.chains.ats_chain import ats_chain
 from langchain_core.output_parsers import StrOutputParser
 
 router = APIRouter(prefix="/resume")
@@ -39,10 +40,20 @@ async def upload_resume(file: UploadFile = File(...)):
             "is_resume": False,
             "message": "This is not a resume. Please upload a valid resume."
         }
+    
+    full_resume_text = " ".join([doc.page_content for doc in documents])
+
+    ats_result = ats_chain.invoke({
+    "resume_text": full_resume_text,
+    "skills": final_output.get("skills", []),
+    "projects": final_output.get("projects", []),
+    "experience": final_output.get("experience", [])
+})
 
     return {
         "is_resume": True,
-        "data": final_output
+        "data": final_output,
+        "ats":ats_result
     }
 
 

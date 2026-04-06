@@ -154,3 +154,82 @@ Resume:
 Job:
 {job}
 """)
+
+ats_prompt = ChatPromptTemplate.from_template("""
+You are a strict ATS (Applicant Tracking System).
+
+Analyze the resume and calculate a realistic ATS score.
+
+=====================
+RESUME TEXT:
+{resume_text}
+
+STRUCTURED DATA:
+Skills: {skills}
+Projects: {projects}
+Experience: {experience}
+=====================
+
+SCORING RULES (STRICT):
+
+Skills (0-30):
+- Basic tools → 10-15
+- Good stack → 15-25
+- Advanced + depth → 25-30
+- NEVER give 30 unless exceptional depth (real-world usage, specialization)
+
+Projects (0-30):
+- Basic projects → 10-15
+- Good projects → 15-25
+- Production-level / real impact → 25-30
+- REDUCE score if:
+  - No measurable results (no %, no numbers)
+  - No real users
+  - No complexity mentioned
+
+Experience (0-20):
+- Empty → MUST be 0
+- Internship → 5-15
+- Full-time → 15-20
+- DO NOT assume experience
+
+Formatting (0-20):
+- Average → 10-15
+- Clean → 15-18
+- Excellent → 18-20
+
+IMPORTANT RULES:
+- DO NOT give full marks easily
+- Be strict and realistic like a real ATS
+- If experience is empty but projects are strong → do NOT heavily penalize total score
+- Total ATS score = sum of all sections
+- Ensure consistency between score and weaknesses
+
+=====================
+
+Return ONLY JSON:
+
+{{
+  "ats_score": number,
+  "score_breakdown": {{
+    "skills": number,
+    "projects": number,
+    "experience": number,
+    "formatting": number
+  }},
+  "summary": "2-3 line evaluation",
+  "strengths": ["point1", "point2"],
+  "weaknesses": ["point1", "point2"],
+  "missing_sections": ["section1"],
+  "improvement_suggestions": ["suggestion1"],
+  "keywords_found": ["keyword1"],
+  "keywords_missing": ["keyword1"]
+}}
+
+=====================
+
+FINAL CHECK BEFORE OUTPUT:
+- Experience empty → score MUST be 0
+- Do NOT give 30/30 easily
+- Total score must match breakdown sum
+""")
