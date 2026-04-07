@@ -1,10 +1,9 @@
 from fastapi import APIRouter, UploadFile, File
 from loaders.resume_loader import load_resume
-from llms.prompts import classifier_prompt,parser_prompt
-from llms.llm import classifier_llm,parser_llm
 from services.resume_service import process_resume
 from chains.ats_chain import ats_chain
 from langchain_core.output_parsers import StrOutputParser
+import re
 
 router = APIRouter(prefix="/resume")
 
@@ -18,14 +17,34 @@ async def upload_resume(file: UploadFile = File(...)):
     if not documents:
         return {"error": "Empty document"}
 
-    first_page_text = documents[0].page_content
+    resume_text = " ".join(document.page_content for document in documents)
 
-    classification_parser=StrOutputParser()
+    def fix_text(text):
+        text = text.lower()
 
-    classification_chain = classifier_prompt | classifier_llm | classification_parser
-    classification = classification_chain.invoke({"text": first_page_text})
+    # FIX: "p r o j e c t s" → "projects"
+        text = re.sub(r'(\b[a-z])\s+(?=[a-z]\b)', r'\1', text)
 
-    result = classification.strip().lower()
+    # FIX: multiple spaces
+        text = re.sub(r'\s+', ' ', text)
+
+        return text
+    
+    fixed_resume_text=fix_text(resume_text)
+
+    keywords = [
+        "skills", "technical skills",
+        "projects", "project",
+        "experience", "work experience",
+        "education", "summary",
+        "professional summary"
+    ]
+
+    if any(keyword in fixed_resume_text for keyword in keywords):
+        result="resume"
+    else:
+        result="not_resume"
+        
 
     if result == "not_resume":
         return {
@@ -41,10 +60,9 @@ async def upload_resume(file: UploadFile = File(...)):
             "message": "This is not a resume. Please upload a valid resume."
         }
     
-    full_resume_text = " ".join([doc.page_content for doc in documents])
 
     ats_result = ats_chain.invoke({
-    "resume_text": full_resume_text,
+    "resume_text": resume_text,
     "skills": final_output.get("skills", []),
     "projects": final_output.get("projects", []),
     "experience": final_output.get("experience", [])

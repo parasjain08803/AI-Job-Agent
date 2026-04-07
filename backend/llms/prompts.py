@@ -1,25 +1,5 @@
 from langchain_core.prompts import ChatPromptTemplate
 
-classifier_prompt = ChatPromptTemplate.from_template("""
-You are a strict classifier.
-
-Check if the following text is a RESUME.
-
-A resume MUST contain at least one of:
-- skills
-- experience
-- education
-- projects
-
-If it's a book, notes, random text → return "not_resume"
-
-Return ONLY:
-resume OR not_resume
-
-Text:
-{text}
-""")
-
 parser_prompt = ChatPromptTemplate.from_template("""
 You are a strict resume parser.
 
