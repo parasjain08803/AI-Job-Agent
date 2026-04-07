@@ -5,7 +5,7 @@ def generate_query_manually(data):
 
     text = " ".join(skills) + " " + projects
 
-    # Role buckets
+    
     roles = {
         "machine learning engineer": [
             "machine learning", "deep learning", "tensorflow", "pytorch",
@@ -34,16 +34,16 @@ def generate_query_manually(data):
         ]
     }
 
-    # Score roles
+    
     role_scores = {}
     for role, keywords in roles.items():
         score = sum(1 for k in keywords if k in text)
         role_scores[role] = score
 
-    # Pick best role
+    
     best_role = max(role_scores, key=role_scores.get)
 
-    # Fallback if weak match
+    
     if role_scores[best_role] == 0:
         return "can not find"
 
