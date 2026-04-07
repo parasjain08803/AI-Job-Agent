@@ -1,6 +1,5 @@
 from chains.match_chain import match_chain
-from chains.query_chain import query_chain
-from llms.prompts import match_prompt,query_prompt
+from services.query_service import generate_query_llm,generate_query_manually
 from services.job_service import fetch_jobs
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
@@ -32,18 +31,6 @@ def prepare_resume_text(data):
     return f"Skills: {skill_text}\nProjects: {project_text}"
 
 
-def _derive_query_from_resume_llm(resume_structured: dict) -> str:
-    result = query_chain.invoke({"resume_json": resume_structured})
-    if not isinstance(result, dict):
-        raise ValueError("LLM did not return a JSON object")
-
-    query = result.get("query")
-    if not isinstance(query, str) or not query.strip():
-        raise ValueError("Missing/invalid query from LLM")
-
-    return query.strip()
-
-
 
 def cosine_similarity(a, b):
     return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
@@ -60,7 +47,7 @@ def match_jobs(resume_text, jobs):
         score = cosine_similarity(resume_vec, job_vec)
         scored_jobs.append((job, score))
 
-    top_jobs = sorted(scored_jobs, key=lambda x: x[1], reverse=True)[:10]
+    top_jobs = sorted(scored_jobs, key=lambda x: x[1], reverse=True)[:]
 
     results = []
 
@@ -102,7 +89,9 @@ def get_matching_jobs(resume_data):
 
     query = query.strip() if isinstance(query, str) else ""
     if not query:
-        query = _derive_query_from_resume_llm(resume_structured)
+        query=generate_query_manually(resume_structured)
+        if query == "can not find":
+            query = generate_query_llm(resume_structured)
 
     jobs = fetch_jobs(query=query, location="India")
 
