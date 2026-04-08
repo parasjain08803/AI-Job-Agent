@@ -251,6 +251,9 @@ export default function App() {
                   <p className="mt-1 text-sm text-slate-300">
                     {job.company || "Unknown Company"} - {job.location || "N/A"}
                   </p>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Source: {job.source || "unknown"}
+                  </p>
                   <p className="mt-2 text-sm text-slate-200">{job.reason || "No reason provided."}</p>
                   <p className="mt-2 text-sm text-slate-400">
                     <span className="font-semibold text-slate-300">Missing skills:</span>{" "}

@@ -62,6 +62,7 @@ def match_jobs(resume_text, jobs):
             "title": job["title"],
             "company": job["company"],
             "location": job["location"],
+            "source":job["source"],
             "description": job["description"],
             "url": job["url"],
             "score": response.get("score", 0),
