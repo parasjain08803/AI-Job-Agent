@@ -24,7 +24,7 @@ async def fetch_jobs_async(
         if isinstance(res, list):
             all_jobs.extend(res)
         else:
-            print("Error in source:", str(res))  # debug
+            print("Error in source:", repr(res))  # debug
 
     return all_jobs
 
