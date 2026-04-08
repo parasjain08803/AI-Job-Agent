@@ -36,6 +36,10 @@ async def fetch_jsearch(query, location="india", page=1):
 
     async with httpx.AsyncClient() as client:
         res = await client.get(BASE_URL, headers=headers, params=params)
+        
+        if res.status_code != 200:
+            raise Exception(f"JSearch failed: {res.text}")
+
         data = res.json()
 
     jobs = data.get("data", [])
