@@ -34,14 +34,22 @@ async def fetch_jsearch(query, location="india", page=1):
         "num_pages": 1
     }
 
-    async with httpx.AsyncClient() as client:
-        res = await client.get(BASE_URL, headers=headers, params=params)
-        
-        if res.status_code != 200:
-            raise Exception(f"JSearch failed: {res.text}")
+    for attempt in range(3): 
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                res = await client.get(BASE_URL, headers=headers, params=params)
 
-        data = res.json()
+            print("STATUS:", res.status_code)
 
-    jobs = data.get("data", [])
+            if res.status_code != 200:
+                raise Exception(res.text)
 
-    return [normalize_job(job) for job in jobs]
+            data = res.json()
+            jobs = data.get("data", [])
+
+            return [normalize_job(job) for job in jobs]
+
+        except Exception as e:
+            print(f"Retry {attempt+1} failed:", str(e))
+
+    return []
