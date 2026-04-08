@@ -25,6 +25,10 @@ export default function App() {
   const [matching, setMatching] = useState(false);
   const [applying, setApplying] = useState(false);
 
+  const [location, setLocation] = useState("India");
+  const [experience, setExperience] = useState("");
+  const [remote, setRemote] = useState(false);
+
   const canMatch = Boolean(resumeData) && !matching;
 
   const sortedJobs = useMemo(
@@ -88,7 +92,7 @@ export default function App() {
   if (!resumeData) return;
 
   setMatching(true);
-  setJobs([]); // Clear existing list
+  setJobs([]); 
   setMatchStatus("Finding top matching roles...");
 
   try {
@@ -98,14 +102,14 @@ export default function App() {
       body: JSON.stringify({
         data: resumeData?.data ?? {},
         query: jobQuery?.trim() ?? "",
+        location: location || "India",
+        experience: experience || undefined,
+        remote: remote || false
       }),
     });
     
     const data = await response.json();
     
-    // IMPORTANT: Log this to your browser console (F12) 
-    // to see exactly what the frontend is receiving.
-    console.log("Raw Matches from Backend:", data.matches);
 
     const matches = data.matches || [];
     setJobs([...matches]); // Use spread to ensure a new reference
@@ -221,6 +225,12 @@ export default function App() {
           )}
 
           <Card title="2) Match Jobs">
+            <div className="space-y-4">
+               <div>
+              <p className="text-xs text-slate-500 mt-1">
+                  All filters are optional — leave blank for broader results
+              </p>
+            </div>
             <div className="flex flex-wrap items-center gap-3">
               <input
                 value={jobQuery}
@@ -229,9 +239,42 @@ export default function App() {
                 className="min-w-[260px] flex-1 rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
               />
             </div>
+            <div className="flex flex-wrap items-center gap-3 mt-3">
+              <input
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                placeholder="Location (e.g. India, Delhi)"
+                className="rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200"
+              />
+
+              <select
+                value={experience}
+                onChange={(e) => setExperience(e.target.value)}
+                className="rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200"
+              >
+                <option value="">Any Experience</option>
+                <option value="fresher">Fresher</option>
+                <option value="intern">Intern</option>
+                <option value="Junior">Junior</option>
+                <option value="Senior">Senior</option>
+              </select>
+
+
+              <label className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+              <input
+                type="checkbox"
+                className="accent-violet-500"
+                checked={remote}
+                onChange={(e) => setRemote(e.target.checked)}
+              />
+                Remote only
+              </label>
+            </div>
+          <motion.div whileTap={{ scale: 0.95 }}>
             <ActionButton onClick={handleMatch} disabled={!canMatch}>
               {matching ? "Finding..." : "Find Top Matches"}
             </ActionButton>
+          </motion.div>  
             <Status>{matchStatus}</Status>
             <div className="mt-3 grid gap-3">
               {sortedJobs.map((job, idx) => (
@@ -280,6 +323,7 @@ export default function App() {
                   </div>
                 </motion.article>
               ))}
+            </div>
             </div>
           </Card>
 

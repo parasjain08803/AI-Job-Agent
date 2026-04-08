@@ -8,13 +8,12 @@ async def fetch_jobs_async(
     location="india",
     experience=None,
     remote=False,
-    min_salary=None
 ):
     tasks = []
 
-    tasks.append(fetch_adzuna(query, location))
+    tasks.append(fetch_adzuna(query, location , experience,remote))
 
-    tasks.append(fetch_jsearch(query, location, page=1))
+    tasks.append(fetch_jsearch(query, location, page=1,experience=experience,remote=remote))
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
 
@@ -33,9 +32,8 @@ def fetch_jobs(
     query,
     location="india",
     experience=None,
-    remote=False,
-    min_salary=None
+    remote=False
 ):
     return asyncio.run(
-        fetch_jobs_async(query, location, experience, remote, min_salary)
+        fetch_jobs_async(query, location, experience, remote)
     )

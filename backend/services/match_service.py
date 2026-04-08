@@ -84,6 +84,10 @@ def get_matching_jobs(resume_data):
         resume_structured = resume_data
     resume_text = prepare_resume_text(resume_structured)
 
+    location = resume_data.get("location", "India")
+    experience = resume_data.get("experience")
+    remote = resume_data.get("remote", False)
+
     query = None
     if isinstance(resume_data, dict):
         query = resume_data.get("query") or resume_data.get("job_query")
@@ -94,7 +98,7 @@ def get_matching_jobs(resume_data):
         if query == "can not find":
             query = generate_query_llm(resume_structured)
 
-    jobs = fetch_jobs(query=query, location="India")
+    jobs = fetch_jobs(query=query, location="India",experience=experience,remote=remote)
 
     matches = match_jobs(resume_text, jobs)
 

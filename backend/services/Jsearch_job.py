@@ -1,19 +1,7 @@
-# backend/services/jsearch.py
-
 import httpx
 import os
-from dotenv import load_dotenv
-
-load_dotenv()
-
-RAPIDAPI_KEY = os.getenv("RAPIDAPI_KEY")
 
 BASE_URL = "https://jsearch.p.rapidapi.com/search"
-
-headers = {
-    "X-RapidAPI-Key": RAPIDAPI_KEY,
-    "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
-}
 
 
 def normalize_job(job):
@@ -23,33 +11,54 @@ def normalize_job(job):
         "location": job.get("job_city"),
         "description": job.get("job_description"),
         "url": job.get("job_apply_link"),
+        "salary": job.get("job_min_salary"),
         "source": "jsearch"
     }
 
 
-async def fetch_jsearch(query, location="india", page=1):
+async def fetch_jsearch(query, location="india", experience=None, remote=False, page=1):
+    headers = {
+        "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY"),
+        "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
+    }
+
+
+    exp = (experience or "").lower()
+
+
+    search_query = f"{query} in {location}"
+
+    if exp == "fresher":
+        search_query += " fresher"
+    elif exp == "intern":
+        search_query += " intern"
+    elif exp == "junior":
+        search_query += " junior"
+    elif exp == "senior":
+        search_query += " senior"
+
+    if remote:
+        search_query += " remote"
+
     params = {
-        "query": f"{query} in {location}",
+        "query": search_query,
         "page": page,
         "num_pages": 1
     }
 
-    for attempt in range(3): 
-        try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                res = await client.get(BASE_URL, headers=headers, params=params)
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            res = await client.get(BASE_URL, headers=headers, params=params)
 
-            print("STATUS:", res.status_code)
+        if res.status_code != 200:
+            print("JSearch Error:", res.text)
+            return []
 
-            if res.status_code != 200:
-                raise Exception(res.text)
+        data = res.json()
+        jobs = data.get("data", [])
 
-            data = res.json()
-            jobs = data.get("data", [])
+        return [normalize_job(job) for job in jobs]
 
-            return [normalize_job(job) for job in jobs]
-
-        except Exception as e:
-            print(f"Retry {attempt+1} failed:", str(e))
-
-    return []
+    except Exception as e:
+        print("JSearch Exception:", str(e))
+        return []
