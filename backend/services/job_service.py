@@ -1,35 +1,41 @@
-import os
-import requests
-from dotenv import load_dotenv
+import asyncio
+from services.Adzuna_job import fetch_adzuna
+from services.Jsearch_job import fetch_jsearch
 
-load_dotenv()
 
-APP_ID = os.getenv("ADZUNA_APP_ID")
-APP_KEY = os.getenv("ADZUNA_APP_KEY")
+async def fetch_jobs_async(
+    query,
+    location="india",
+    experience=None,
+    remote=False,
+    min_salary=None
+):
+    tasks = []
 
-def fetch_jobs(query, location="India"):
-    url = f"https://api.adzuna.com/v1/api/jobs/in/search/1"
+    tasks.append(fetch_adzuna(query, location))
 
-    params = {
-        "app_id": APP_ID,
-        "app_key": APP_KEY,
-        "what": query,
-        "where": location,
-        "results_per_page": 10
-    }
+    tasks.append(fetch_jsearch(query, location, page=1))
 
-    response = requests.get(url, params=params)
-    data = response.json()
+    results = await asyncio.gather(*tasks, return_exceptions=True)
 
-    jobs = []
+    all_jobs = []
 
-    for job in data.get("results", []):
-        jobs.append({
-            "title": job.get("title"),
-            "description": job.get("description"),
-            "company": job.get("company", {}).get("display_name"),
-            "location": job.get("location", {}).get("display_name"),
-            "url":job.get("redirect_url")
-        })
+    for res in results:
+        if isinstance(res, list):
+            all_jobs.extend(res)
+        else:
+            print("Error in source:", res)  # debug
 
-    return jobs
+    return all_jobs
+
+
+def fetch_jobs(
+    query,
+    location="india",
+    experience=None,
+    remote=False,
+    min_salary=None
+):
+    return asyncio.run(
+        fetch_jobs_async(query, location, experience, remote, min_salary)
+    )
