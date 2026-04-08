@@ -36,7 +36,7 @@ async def fetch_jsearch(query, location="india", page=1):
 
     for attempt in range(3): 
         try:
-            async with httpx.AsyncClient(timeout=20.0) as client:
+            async with httpx.AsyncClient(timeout=10.0) as client:
                 res = await client.get(BASE_URL, headers=headers, params=params)
 
             print("STATUS:", res.status_code)
