@@ -25,8 +25,8 @@ export default function App() {
   const [matching, setMatching] = useState(false);
   const [applying, setApplying] = useState(false);
 
-  const [location, setLocation] = useState("India");
-  const [experience, setExperience] = useState("");
+  const [location, setLocation] = useState();
+  const [jobtype, setJobtype] = useState("");
   const [remote, setRemote] = useState(false);
 
   const canMatch = Boolean(resumeData) && !matching;
@@ -103,7 +103,7 @@ export default function App() {
         data: resumeData?.data ?? {},
         query: jobQuery?.trim() ?? "",
         location: location || "India",
-        experience: experience || undefined,
+        jobtype: jobtype || undefined,
         remote: remote || false
       }),
     });
@@ -243,19 +243,18 @@ export default function App() {
               <input
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                placeholder="Location (e.g. India, Delhi)"
+                placeholder="Location (e.g. Banglore, Delhi)"
                 className="rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200"
               />
 
               <select
-                value={experience}
-                onChange={(e) => setExperience(e.target.value)}
+                value={jobtype}
+                onChange={(e) => setJobtype(e.target.value)}
                 className="rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200"
               >
-                <option value="">Any Experience</option>
-                <option value="fresher">Fresher</option>
-                <option value="intern">Intern</option>
-                <option value="Junior">Junior</option>
+                <option value="">Job Type</option>
+                <option value="Internship">Internship</option>
+                <option value="Fresher">Fresher</option>
                 <option value="Senior">Senior</option>
               </select>
 

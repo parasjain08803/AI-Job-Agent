@@ -17,22 +17,20 @@ def normalize_job(job):
     }
 
 
-async def fetch_adzuna(query, location="india", experience=None, remote=False):
+async def fetch_adzuna(query, location="india", job_type=None, remote=False):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
 
 
-    exp = (experience or "").lower()
+    job_type = (job_type or "").lower()
 
 
     search_query = query
 
-    if exp == "fresher":
+    if job_type == "Fresher":
         search_query += "fresher"
-    elif exp == "intern":
-        search_query += " intern"
-    elif exp == "junior":
-        search_query += " junior"
-    elif exp == "senior":
+    elif job_type == "Internship":
+        search_query += " internship"
+    elif job_type == "Senior":
         search_query += " senior"
 
     if remote:

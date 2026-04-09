@@ -16,25 +16,23 @@ def normalize_job(job):
     }
 
 
-async def fetch_jsearch(query, location="india", experience=None, remote=False, page=1):
+async def fetch_jsearch(query, location="india", job_type=None, remote=False, page=1):
     headers = {
         "X-RapidAPI-Key": os.getenv("RAPIDAPI_KEY"),
         "X-RapidAPI-Host": "jsearch.p.rapidapi.com"
     }
 
 
-    exp = (experience or "").lower()
+    job_type = (job_type or "").lower()
 
 
     search_query = f"{query} in {location}"
 
-    if exp == "fresher":
+    if job_type == "Fresher":
         search_query += " fresher"
-    elif exp == "intern":
+    elif job_type == "Internship":
         search_query += " intern"
-    elif exp == "junior":
-        search_query += " junior"
-    elif exp == "senior":
+    elif job_type == "Senior":
         search_query += " senior"
 
     if remote:
