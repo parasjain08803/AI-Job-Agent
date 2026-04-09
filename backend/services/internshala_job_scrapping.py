@@ -228,7 +228,7 @@ async def fetch_internshala(
 
         jobs = remove_duplicates(jobs)
 
-        semaphore = asyncio.Semaphore(4)
+        semaphore = asyncio.Semaphore(2)
 
         tasks = [
             fetch_description(context, job["url"], semaphore)
@@ -243,3 +243,15 @@ async def fetch_internshala(
         await browser.close()
 
     return jobs
+
+async def safe_fetch_internshala(query, location, job_type, remote):
+    try:
+        return await fetch_internshala(
+            query=query,
+            location=location,
+            remote=remote,
+            job_type=job_type or "Fresher"
+        )
+    except Exception as e:
+        print("Internshala error:", e)
+        return []
