@@ -18,7 +18,7 @@ async def fetch_jobs_async(
     tasks.append(
     asyncio.wait_for(
         safe_fetch_internshala(query, location, job_type, remote),
-        timeout=10
+        timeout=30
     )
 )
 
