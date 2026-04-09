@@ -76,7 +76,7 @@ def match_jobs(resume_text, jobs):
     return results
 
 
-async def get_matching_jobs(resume_data):
+def get_matching_jobs(resume_data):
 
     if "data" in resume_data:
         resume_structured = resume_data.get("data",{})
@@ -98,7 +98,7 @@ async def get_matching_jobs(resume_data):
         if query == "can not find":
             query = generate_query_llm(resume_structured)
 
-    jobs = await fetch_jobs_async(query=query, location=location,job_type=job_type,remote=remote)
+    jobs = fetch_jobs(query=query, location=location,job_type=job_type,remote=remote)
 
     matches = match_jobs(resume_text, jobs)
 
