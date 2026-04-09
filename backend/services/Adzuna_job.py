@@ -21,13 +21,10 @@ async def fetch_adzuna(query, location="india", job_type=None, remote=False):
     url = "https://api.adzuna.com/v1/api/jobs/in/search/1"
 
 
-    job_type = (job_type or "").lower()
-
-
     search_query = query
 
     if job_type == "Fresher":
-        search_query += "fresher"
+        search_query += " fresher"
     elif job_type == "Internship":
         search_query += " internship"
     elif job_type == "Senior":

@@ -23,9 +23,6 @@ async def fetch_jsearch(query, location="india", job_type=None, remote=False, pa
     }
 
 
-    job_type = (job_type or "").lower()
-
-
     search_query = f"{query} in {location}"
 
     if job_type == "Fresher":

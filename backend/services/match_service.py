@@ -1,6 +1,6 @@
 from chains.match_chain import match_chain
 from services.query_service import generate_query_llm,generate_query_manually
-from services.job_service import fetch_jobs
+from services.job_service import fetch_jobs,fetch_jobs_async
 from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 import numpy as np
@@ -76,7 +76,7 @@ def match_jobs(resume_text, jobs):
     return results
 
 
-def get_matching_jobs(resume_data):
+async def get_matching_jobs(resume_data):
 
     if "data" in resume_data:
         resume_structured = resume_data.get("data",{})
@@ -98,7 +98,7 @@ def get_matching_jobs(resume_data):
         if query == "can not find":
             query = generate_query_llm(resume_structured)
 
-    jobs = fetch_jobs(query=query, location=location,job_type=job_type,remote=remote)
+    jobs = await fetch_jobs_async(query=query, location=location,job_type=job_type,remote=remote)
 
     matches = match_jobs(resume_text, jobs)
 
