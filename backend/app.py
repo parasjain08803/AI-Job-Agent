@@ -7,7 +7,7 @@ from routes import apply
 app=FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["https://ai-job-agent-virid.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
