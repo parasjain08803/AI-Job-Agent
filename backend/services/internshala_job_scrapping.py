@@ -144,6 +144,7 @@ async def fetch_internshala(
 ):
 
     profile = map_query_to_profile(query)
+    print(profile)
     jobs = []
 
     async with async_playwright() as p:
@@ -195,6 +196,8 @@ async def fetch_internshala(
                 else:
                     url = f"https://internshala.com/jobs/{slugify(profile)}-jobs/experience-2/page-{i}/"
 
+            print(url)        
+
             await page.goto(url, timeout=10000, wait_until="domcontentloaded")
 
             await page.wait_for_selector(".individual_internship", timeout=5000)
@@ -228,7 +231,7 @@ async def fetch_internshala(
 
         jobs = remove_duplicates(jobs)
 
-        semaphore = asyncio.Semaphore(2)
+        semaphore = asyncio.Semaphore(4)
 
         tasks = [
             fetch_description(context, job["url"], semaphore)

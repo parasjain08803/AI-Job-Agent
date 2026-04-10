@@ -1,5 +1,7 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
+import Select from "react-select";
+import locationOptions from "./data/locations";
 
 const API_BASE = "https://aijobagent.duckdns.org";
 
@@ -25,11 +27,12 @@ export default function App() {
   const [matching, setMatching] = useState(false);
   const [applying, setApplying] = useState(false);
 
-  const [location, setLocation] = useState();
+  const [location, setLocation] = useState(null);
   const [jobtype, setJobtype] = useState("");
   const [remote, setRemote] = useState(false);
 
   const canMatch = Boolean(resumeData) && !matching;
+
 
   const sortedJobs = useMemo(
   () =>
@@ -102,7 +105,7 @@ export default function App() {
       body: JSON.stringify({
         data: resumeData?.data ?? {},
         query: jobQuery?.trim() ?? "",
-        location: location || "India",
+        location: location,
         jobtype: jobtype || undefined,
         remote: remote || false
       }),
@@ -239,13 +242,67 @@ export default function App() {
                 className="min-w-[260px] flex-1 rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200 placeholder:text-slate-500"
               />
             </div>
-            <div className="flex flex-wrap items-center gap-3 mt-3">
-              <input
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Location (e.g. Banglore, Delhi)"
-                className="rounded-lg border border-white/15 bg-slate-950/70 px-3 py-2 text-sm text-slate-200"
-              />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="w-[240px]">
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <Select
+                    options={locationOptions}
+                    value={locationOptions.find(opt => opt.value === location) || null}
+                    onChange={(option) => setLocation(option ? option.value : null)}
+                    menuPortalTarget={document.body}
+
+                    placeholder="Select Location..."
+
+                    isSearchable
+                    isClearable
+
+                    styles={{
+                    control: (base) => ({
+                      ...base,
+                      backgroundColor: "#020617", // dark bg
+                      borderColor: "rgba(255,255,255,0.15)",
+                      borderRadius: "10px",
+                      padding: "2px",
+                      boxShadow: "none",
+                      color: "#e2e8f0",
+                    }),
+                    menu: (base) => ({
+                      ...base,
+                      backgroundColor: "#020617",
+                      border: "1px solid rgba(255,255,255,0.1)",
+                      zIndex: 9999, // 🔥 ADD THIS
+                    }),
+                    menuPortal: (base) => ({
+                      ...base,
+                      zIndex: 9999, // 🔥 ADD THIS
+                    }),
+                    option: (base, state) => ({
+                      ...base,
+                      backgroundColor: state.isFocused
+                        ? "rgba(139,92,246,0.3)"
+                        : "transparent",
+                      color: "#e2e8f0",
+                      cursor: "pointer",
+                    }),
+                    singleValue: (base) => ({
+                      ...base,
+                      color: "#e2e8f0",
+                    }),
+                    input: (base) => ({
+                      ...base,
+                      color: "#e2e8f0",
+                    }),
+                    placeholder: (base) => ({
+                      ...base,
+                      color: "#64748b",
+                    }),
+                    }}
+                 />
+                </motion.div> 
+              </div>
 
               <select
                 value={jobtype}

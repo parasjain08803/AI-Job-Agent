@@ -1,7 +1,7 @@
 import asyncio
 from services.Adzuna_job import fetch_adzuna
 from services.Jsearch_job import fetch_jsearch
-
+from services.internshala_job_scrapping import safe_fetch_internshala
 async def fetch_jobs_async(
     query,
     location="india",
@@ -13,6 +13,8 @@ async def fetch_jobs_async(
     tasks.append(fetch_adzuna(query, location , job_type,remote))
 
     tasks.append(fetch_jsearch(query, location, page=1,job_type=job_type,remote=remote))
+
+    tasks.append(safe_fetch_internshala(query,location,job_type,remote))
 
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
