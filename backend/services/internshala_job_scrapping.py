@@ -113,9 +113,9 @@ async def fetch_description(context, url, semaphore):
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
             })
 
-            await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            await page.goto(url, timeout=20000, wait_until="domcontentloaded")
 
-            await page.wait_for_selector(".text-container", timeout=5000)
+            await page.wait_for_selector(".text-container", timeout=10000)
 
             full_desc = ""
 
@@ -198,9 +198,9 @@ async def fetch_internshala(
 
             print(url)        
 
-            await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            await page.goto(url, timeout=20000, wait_until="domcontentloaded")
 
-            await page.wait_for_selector(".individual_internship", timeout=5000)
+            await page.wait_for_selector(".individual_internship", timeout=10000)
 
             cards = await page.query_selector_all(".individual_internship")
 
