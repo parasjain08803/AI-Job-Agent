@@ -252,7 +252,7 @@ export default function App() {
                     options={locationOptions}
                     value={locationOptions.find(opt => opt.value === location) || null}
                     onChange={(option) => setLocation(option ? option.value : null)}
-                    menuPortalTarget={document.body}
+                    menuPortalTarget={typeof window !== "undefined" ? document.body : null}
 
                     placeholder="Select Location..."
 
