@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import Select from "react-select";
 import locationOptions from "./data/locations";
 
-const API_BASE = "https://aijobagent.duckdns.org";
+const API_BASE =  "https://aijobagent.duckdns.org";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 24 },
@@ -252,7 +252,7 @@ export default function App() {
                     options={locationOptions}
                     value={locationOptions.find(opt => opt.value === location) || null}
                     onChange={(option) => setLocation(option ? option.value : null)}
-                    menuPortalTarget={typeof window !== "undefined" ? document.body : null}
+                    menuPortalTarget={document.body}
 
                     placeholder="Select Location..."
 
