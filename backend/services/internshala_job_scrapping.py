@@ -1,6 +1,7 @@
 import difflib
 import asyncio
 import re
+import traceback
 from playwright.async_api import async_playwright
 
 INTERNHALA_PROFILES = [
@@ -113,9 +114,9 @@ async def fetch_description(context, url, semaphore):
                 "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
             })
 
-            await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            await page.goto(url, timeout=60000, wait_until="networkidle")
 
-            await page.wait_for_selector(".text-container", timeout=5000)
+            await page.wait_for_selector(".text-container", timeout=20000)
 
             full_desc = ""
 
@@ -154,7 +155,8 @@ async def fetch_internshala(
                 "--no-sandbox",
                 "--disable-setuid-sandbox",
                 "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled"
+                "--disable-blink-features=AutomationControlled",
+                "--disable-gpu"
             ]
         )
 
@@ -198,9 +200,9 @@ async def fetch_internshala(
 
             print(url)        
 
-            await page.goto(url, timeout=10000, wait_until="domcontentloaded")
+            await page.goto(url, timeout=60000, wait_until="networkidle")
 
-            await page.wait_for_selector(".individual_internship", timeout=5000)
+            await page.wait_for_selector(".individual_internship", timeout=20000)
 
             cards = await page.query_selector_all(".individual_internship")
 
@@ -256,5 +258,6 @@ async def safe_fetch_internshala(query, location, job_type, remote):
             job_type=job_type or "Fresher"
         )
     except Exception as e:
-        print("Internshala error:", e)
+        print("Internshala FULL ERROR:")
+        traceback.print_exc()
         return []
