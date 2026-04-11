@@ -14,7 +14,7 @@ async def fetch_jobs_async(
 
     tasks.append(fetch_jsearch(query, location, page=1,job_type=job_type,remote=remote))
 
-    ##tasks.append(safe_fetch_internshala(query,location,job_type,remote))
+    tasks.append(safe_fetch_internshala(query,location,job_type,remote))
 
 
     results = await asyncio.gather(*tasks, return_exceptions=True)
@@ -29,13 +29,3 @@ async def fetch_jobs_async(
 
     return all_jobs
 
-
-def fetch_jobs(
-    query,
-    location="india",
-    job_type=None,
-    remote=False
-):
-    return asyncio.run(
-        fetch_jobs_async(query, location, job_type, remote)
-    )

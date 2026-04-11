@@ -1,8 +1,16 @@
 import difflib
 import asyncio
 import re
-import traceback
 from playwright.async_api import async_playwright
+import asyncio
+import sys
+
+if sys.platform == "win32":
+    asyncio.set_event_loop_policy(asyncio.WindowsSelectorEventLoopPolicy())
+
+playwright = None
+browser = None
+context = None
 
 INTERNHALA_PROFILES = [
     "Data Science", "Machine Learning", "Artificial Intelligence (AI)",
@@ -31,6 +39,28 @@ INTERNHALA_PROFILES = [
     "Project Management", "Product Management",
 ]
 
+
+async def get_browser():
+    global playwright, browser, context
+
+    if browser is None:
+        from playwright.async_api import async_playwright
+
+        playwright = await async_playwright().start()
+
+        browser = await playwright.chromium.launch(
+            headless=True,
+            args=[
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-blink-features=AutomationControlled"
+            ]
+        )
+
+        context = await browser.new_context()
+
+    return context
 
 def normalize(text):
     return re.sub(r'[^a-z0-9 ]', '', text.lower())
@@ -101,39 +131,39 @@ def slugify(profile):
 
 
 
-async def fetch_description(context, url, semaphore):
-    async with semaphore:
-        try:
-            page = await context.new_page()
+async def fetch_description(url):
+    try:
+        page = await context.new_page()
 
-            await page.route("**/*", lambda route: route.abort()
-                if route.request.resource_type in ["image", "stylesheet", "font"]
-                else route.continue_())
+        await page.set_extra_http_headers({
+            "User-Agent": "Mozilla/5.0"
+        })
 
-            await page.set_extra_http_headers({
-                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-            })
+        await page.route("**/*", lambda route: route.abort()
+            if route.request.resource_type in ["image", "stylesheet", "font"]
+            else route.continue_())
 
-            await page.goto(url, timeout=60000, wait_until="networkidle")
+        await page.goto(url, timeout=15000, wait_until="domcontentloaded")
 
-            await page.wait_for_selector(".text-container", timeout=20000)
+        await page.wait_for_selector(".text-container", timeout=5000)
 
-            full_desc = ""
+        full_desc = ""
 
-            about = await page.query_selector("div.text-container")
-            if about:
-                full_desc += await about.inner_text()
+        about = await page.query_selector("div.text-container")
+        if about:
+            full_desc += await about.inner_text()
 
-            skills = await page.query_selector_all("span.round_tabs")
-            if skills:
-                skill_text = " ".join([await s.inner_text() for s in skills])
-                full_desc += "\nSkills: " + skill_text
+        skills = await page.query_selector_all("span.round_tabs")
+        if skills:
+            skill_text = " ".join([await s.inner_text() for s in skills])
+            full_desc += "\nSkills: " + skill_text
 
-            await page.close()
-            return full_desc.strip()
+        await page.close()
+        return full_desc.strip()
 
-        except:
-            return ""
+    except Exception as e:
+        print("Scraping error:", e)
+        return ""
 
 
 async def fetch_internshala(
@@ -145,107 +175,79 @@ async def fetch_internshala(
 ):
 
     profile = map_query_to_profile(query)
-    print(profile)
     jobs = []
 
-    async with async_playwright() as p:
-        browser = await p.chromium.launch(
-            headless=True,
-            args=[
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-blink-features=AutomationControlled",
-                "--disable-gpu"
-            ]
-        )
+    page = await context.new_page()   # ✅ global context use
 
-        context = await browser.new_context()
+    await page.set_extra_http_headers({
+        "User-Agent": "Mozilla/5.0"
+    })
 
-        page = await context.new_page()
+    await page.route("**/*", lambda route: route.abort()
+        if route.request.resource_type in ["image", "stylesheet", "font"]
+        else route.continue_())
 
-        await page.set_extra_http_headers({
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36"
-        })
+    for i in range(1, pages + 1):
 
-        await page.route("**/*", lambda route: route.abort()
-            if route.request.resource_type in ["image", "stylesheet", "font"]
-            else route.continue_())
+        if job_type == "Internship":
+            if remote:
+                url = f"https://internshala.com/internships/work-from-home-{slugify(profile)}-internship/page-{i}/"
+            elif location:
+                url = f"https://internshala.com/internships/{slugify(profile)}-internship-in-{location.lower()}/page-{i}/"
+            else:
+                url = f"https://internshala.com/internships/{slugify(profile)}-internship/page-{i}/"
 
-        for i in range(1, pages + 1):
+        elif job_type == "Fresher":
+            if remote:
+                url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs/work-from-home/page-{i}/"
+            elif location:
+                url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs-in-{location.lower()}/page-{i}/"
+            else:
+                url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs/page-{i}/"
 
-            if job_type == "Internship":
-                if remote:
-                    url = f"https://internshala.com/internships/work-from-home-{slugify(profile)}-internship/page-{i}/"
-                elif location:
-                    url = f"https://internshala.com/internships/{slugify(profile)}-internship-in-{location.lower()}/page-{i}/"
-                else:
-                    url = f"https://internshala.com/internships/{slugify(profile)}-internship/page-{i}/"
+        elif job_type == "Senior":
+            if remote:
+                url = f"https://internshala.com/jobs/{slugify(profile)}-jobs/work-from-home/experience-2/page-{i}/"
+            elif location:
+                url = f"https://internshala.com/jobs/{slugify(profile)}-jobs-in-{location.lower()}/experience-2/page-{i}/"
+            else:
+                url = f"https://internshala.com/jobs/{slugify(profile)}-jobs/experience-2/page-{i}/"
 
-            elif job_type == "Fresher":
-                if remote:
-                    url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs/work-from-home/page-{i}/"
-                elif location:
-                    url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs-in-{location.lower()}/page-{i}/"
-                else:
-                    url = f"https://internshala.com/fresher-jobs/{slugify(profile)}-jobs/page-{i}/"
+        print(url)        
 
-            elif job_type == "Senior":
-                if remote:
-                    url = f"https://internshala.com/jobs/{slugify(profile)}-jobs/work-from-home/experience-2/page-{i}/"
-                elif location:
-                    url = f"https://internshala.com/jobs/{slugify(profile)}-jobs-in-{location.lower()}/experience-2/page-{i}/"
-                else:
-                    url = f"https://internshala.com/jobs/{slugify(profile)}-jobs/experience-2/page-{i}/"
+        await page.goto(url, timeout=10000, wait_until="domcontentloaded")
 
-            print(url)        
+        await page.wait_for_selector(".individual_internship", timeout=5000)
 
-            await page.goto(url, timeout=60000, wait_until="networkidle")
+        cards = await page.query_selector_all(".individual_internship")
 
-            await page.wait_for_selector(".individual_internship", timeout=20000)
+        for card in cards:
+            title_el = await card.query_selector(".job-internship-name")
+            company_el = await card.query_selector(".company-name")
+            location_el = await card.query_selector(".locations")
+            link_el = await card.query_selector("a")
 
-            cards = await page.query_selector_all(".individual_internship")
+            title = clean_text(await title_el.inner_text()) if title_el else ""
+            company = clean_text(await company_el.inner_text()) if company_el else ""
+            location = clean_text(await location_el.inner_text()) if location_el else ""
+            link = await link_el.get_attribute("href") if link_el else ""
 
-            for card in cards:
-                title_el = await card.query_selector(".job-internship-name")
-                company_el = await card.query_selector(".company-name")
-                location_el = await card.query_selector(".locations")
-                link_el = await card.query_selector("a")
+            if not title or not company or not link:
+                continue
 
-                title = clean_text(await title_el.inner_text()) if title_el else ""
-                company = clean_text(await company_el.inner_text()) if company_el else ""
-                location = clean_text(await location_el.inner_text()) if location_el else ""
-                link = await link_el.get_attribute("href") if link_el else ""
+            jobs.append({
+                "title": title,
+                "company": company,
+                "location": location,
+                "description": None,
+                "url": "https://internshala.com" + link,
+                "source": "internshala",
+                "type": job_type.lower(),
+                "remote": "work-from-home" in link.lower()
+            })
+    await page.close()    
 
-                if not title or not company or not link:
-                    continue
-
-                jobs.append({
-                    "title": title,
-                    "company": company,
-                    "location": location,
-                    "description": "",
-                    "url": "https://internshala.com" + link,
-                    "source": "internshala",
-                    "type": job_type.lower(),
-                    "remote": "work-from-home" in link.lower()
-                })
-
-        jobs = remove_duplicates(jobs)
-
-        semaphore = asyncio.Semaphore(4)
-
-        tasks = [
-            fetch_description(context, job["url"], semaphore)
-            for job in jobs
-        ]
-
-        descriptions = await asyncio.gather(*tasks)
-
-        for i, job in enumerate(jobs):
-            job["description"] = descriptions[i]
-
-        await browser.close()
+    jobs = remove_duplicates(jobs)
 
     return jobs
 
@@ -258,6 +260,5 @@ async def safe_fetch_internshala(query, location, job_type, remote):
             job_type=job_type or "Fresher"
         )
     except Exception as e:
-        print("Internshala FULL ERROR:")
-        traceback.print_exc()
+        print("Internshala error:", e)
         return []
