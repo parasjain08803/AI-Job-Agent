@@ -191,7 +191,7 @@ async def fetch_internshala(
 
         if job_type == "Internship":
             if remote:
-                url = f"https://internshala.com/internships/work-from-home-{slugify(profile)}-internship/page-{i}/"
+                url = f"https://internshala.com/internships/work-from-home-{slugify(profile)}-internships/page-{i}/"
             elif location:
                 url = f"https://internshala.com/internships/{slugify(profile)}-internship-in-{location.lower()}/page-{i}/"
             else:
