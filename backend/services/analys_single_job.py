@@ -47,9 +47,6 @@ async def analyze_single_job(resume_data, job):
     if key in analysis_cache:
         return analysis_cache[key]
 
-    # -----------------------------
-    # Prepare resume
-    # -----------------------------
     if "data" in resume_data:
         resume_structured = resume_data.get("data", {})
     else:
@@ -57,10 +54,7 @@ async def analyze_single_job(resume_data, job):
 
     resume_text = prepare_resume_text(resume_structured)
 
-    # -----------------------------
-    # Get job description
-    # -----------------------------
-    description = job.get("description")
+    description=job.get("description")
 
     if not description:
         if job.get("source") == "internshala":
@@ -69,104 +63,49 @@ async def analyze_single_job(resume_data, job):
     if not description:
         return {
             "error": "Description not found"
-        }
+        }        
+      
 
-    # -----------------------------
-    # Embedding similarity
-    # -----------------------------
+    # embeddings similarity
     resume_vec = embeddings.embed_query(resume_text)
     job_vec = embeddings.embed_query(description)
 
     similarity_score = cosine_similarity(resume_vec, job_vec)
 
-    # -----------------------------
     # LLM analysis
-    # -----------------------------
     try:
         from llms.llm import match_llm
-
-        print("\n========== LLM DEBUG ==========")
-        print("match_llm:", match_llm)
-        print("match_llm type:", type(match_llm))
-        print("Job title:", job.get("title"))
-        print("Resume length:", len(resume_text))
-        print("Description length:", len(description))
-        print("================================\n")
-
         if match_llm is None:
-
-            print("WARNING: match_llm is None")
-
+            # Fallback mock analysis when LLM is not available
             result = {
                 "score": min(85, int(similarity_score * 100)),
-                "reason": (
-                    f"Based on similarity analysis, your resume matches "
-                    f"{int(similarity_score * 100)}% with this job requirement."
-                ),
-                "missing_skills": [
-                    "API integration",
-                    "Cloud deployment"
-                ],
-                "suggestion": (
-                    "Consider gaining experience with cloud platforms "
-                    "and API development to strengthen your application."
-                ),
+                "reason": f"Based on similarity analysis, your resume matches {int(similarity_score * 100)}% with this job requirement.",
+                "missing_skills": ["API integration", "Cloud deployment"],  # Mock missing skills
+                "suggestion": "Consider gaining experience with cloud platforms and API development to strengthen your application.",
                 "similarity": float(similarity_score)
             }
-
         else:
-
-            print("Calling match_chain...")
-
             response = match_chain.invoke({
                 "resume": resume_text,
-                "title": job.get("title", ""),
+                "title": job["title"],
                 "description": description
             })
 
-            print("\n========== LLM RESPONSE ==========")
-            print("Response:", response)
-            print("Response type:", type(response))
-            print("==================================\n")
-
-            # Handle dictionary response
-            if isinstance(response, dict):
-
-                result = {
-                    "score": response.get("score", 0),
-                    "reason": response.get("reason", ""),
-                    "missing_skills": response.get("missing_skills", []),
-                    "suggestion": response.get("suggestion", ""),
-                    "similarity": float(similarity_score)
-                }
-
-            else:
-                # Response is probably AIMessage / string
-                print("WARNING: LLM response is not a dictionary")
-
-                result = {
-                    "score": 0,
-                    "reason": str(response),
-                    "missing_skills": [],
-                    "suggestion": "",
-                    "similarity": float(similarity_score)
-                }
-
+            result = {
+                "score": response.get("score", 0),
+                "reason": response.get("reason", ""),
+                "missing_skills": response.get("missing_skills", []),
+                "suggestion": response.get("suggestion", ""),
+                "similarity": float(similarity_score)
+            }
     except Exception as e:
-
-        print("\n\n========== LLM ANALYSIS FAILED ==========")
-        print("ERROR TYPE:", type(e).__name__)
-        print("ERROR:", str(e))
-
-        import traceback
-        traceback.print_exc()
-
-        print("=========================================\n\n")
-
-        # IMPORTANT:
-        # Do NOT hide the error while debugging.
-        raise
-
+        # Fallback if LLM analysis fails
+        result = {
+            "score": min(75, int(similarity_score * 100)),
+            "reason": f"Analysis based on resume-job similarity ({int(similarity_score * 100)}%). LLM analysis unavailable.",
+            "missing_skills": [],
+            "suggestion": "Ensure your resume highlights relevant skills mentioned in the job description.",
+            "similarity": float(similarity_score)
+        }
     analysis_cache[key] = result
-
     return result
