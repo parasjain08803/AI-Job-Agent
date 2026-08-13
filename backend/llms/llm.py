@@ -8,7 +8,7 @@ groq_api_key = os.getenv("GROQ_API_KEY")
 
 if groq_api_key:
     classifier_llm = query_llm = ChatGroq(model="llama-3.1-8b-instant")
-    structured_data_llm = match_llm = ChatGroq(model="meta-llama/llama-prompt-guard-2-86m")
+    structured_data_llm = match_llm = ChatGroq(model="llama-3.3-70b-versatile")
     application_llm = ChatGroq(model="openai/gpt-oss-120b")
     parser_llm = ChatGroq(model="llama-3.3-70b-versatile")
 else:
